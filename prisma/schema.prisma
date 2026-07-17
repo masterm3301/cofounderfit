@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleType {
+  TECHNICAL
+  BUSINESS
+  DESIGN
+  OTHER
+}
+
+enum Commitment {
+  FULL_TIME
+  PART_TIME
+}
+
+model User {
+  id         String   @id @default(cuid())
+  linkedinId String   @unique
+  email      String   @unique
+  name       String
+  createdAt  DateTime @default(now())
+
+  profile Profile?
+  project Project?
+}
+
+model Profile {
+  userId                String      @id
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photoUrl              String?
+  location              String?
+  bio                   String?
+  skills                String[]    @default([])
+  roleType              RoleType?
+  commitment            Commitment?
+  hasIdea               Boolean     @default(false)
+  coFounderTraitsWanted String?
+  linkedinUrl           String?
+  otherLinks            String[]    @default([])
+}
+
+model Project {
+  id                  String      @id @default(cuid())
+  ownerId             String      @unique
+  owner               User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name                String
+  tagline             String
+  description         String
+  industry            String?
+  rolesNeeded         String[]    @default([])
+  equityOffered       String?
+  commitmentExpected  Commitment?
+  websiteUrl          String?
+  deckUrl             String?
+  demoUrl             String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+}
