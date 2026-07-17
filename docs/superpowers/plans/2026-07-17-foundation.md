@@ -6,7 +6,7 @@
 
 **Architecture:** A single Next.js (App Router, TypeScript) app talking to Postgres through Prisma. Auth.js (NextAuth v5) handles LinkedIn OAuth and creates a `User` + blank `Profile` on first login. Business logic (profile/project CRUD, completeness checks, ownership) lives in plain server-side TypeScript modules under `src/lib/`, independently testable with Vitest against a real Postgres test database; pages and Server Actions are thin wrappers around those modules.
 
-**Tech Stack:** Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Prisma + Postgres, Auth.js v5 (LinkedIn OIDC provider), Zod, Vitest, Docker Compose (local Postgres).
+**Tech Stack:** Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Prisma + Postgres, Auth.js v5 (LinkedIn OIDC provider), Zod, Vitest, Neon (managed dev + test Postgres databases).
 
 ## Global Constraints
 
@@ -226,7 +226,6 @@ git commit -m "chore: scaffold Next.js app with TypeScript, Tailwind, Vitest"
 ### Task 2: Postgres + Prisma schema & migrations
 
 **Files:**
-- Create: `docker-compose.yml`
 - Create: `prisma/schema.prisma`
 - Create: `.env.example`
 - Create: `.env` (not committed)
@@ -234,57 +233,45 @@ git commit -m "chore: scaffold Next.js app with TypeScript, Tailwind, Vitest"
 
 **Interfaces:**
 - Consumes: nothing from prior tasks.
-- Produces: Postgres running locally on `5432` with database `cofounderfit` (dev) and `cofounderfit_test` (test), credentials `postgres`/`postgres`. Prisma schema with models `User`, `Profile`, `Project` and enums `RoleType`, `Commitment`, matching the spec's field tables exactly. `DATABASE_URL` env var convention used by all later Prisma access.
+- Produces: a Neon Postgres project with two databases, `cofounderfit` (dev) and `cofounderfit_test` (test). Prisma schema with models `User`, `Profile`, `Project` and enums `RoleType`, `Commitment`, matching the spec's field tables exactly. `DATABASE_URL` env var convention used by all later Prisma access.
 
-- [ ] **Step 1: Write `docker-compose.yml`**
+- [ ] **Step 1: Create a Neon project and get the dev connection string**
 
-```yaml
-services:
-  postgres:
-    image: postgres:16
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: cofounderfit
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+This step is done by the human, not the implementer subagent — it requires a Neon account.
 
-volumes:
-  pgdata:
+At https://console.neon.tech, create a new project (any region/name — e.g. project name `cofounder-fit`). Neon creates one database, `neondb`, by default; rename it to `cofounderfit` from the console's Databases tab (or just note its name if renaming isn't available in your Neon plan).
+
+From the project's Connection Details panel, copy the **pooled** connection string (it includes `-pooler` in the hostname and `?sslmode=require` in the query string). It looks like:
+
+```
+postgresql://<user>:<password>@<host>-pooler.<region>.aws.neon.tech/cofounderfit?sslmode=require
 ```
 
-- [ ] **Step 2: Start Postgres and create the test database**
+Provide this connection string to the implementer as `NEON_DATABASE_URL` before starting Step 2.
 
-Run: `docker compose up -d`
-Expected: `docker compose ps` shows the `postgres` service as `running`/`healthy`.
-
-Run: `docker compose exec -T postgres psql -U postgres -c "CREATE DATABASE cofounderfit_test;"`
-Expected: `CREATE DATABASE`.
-
-- [ ] **Step 3: Install Prisma**
+- [ ] **Step 2: Install Prisma**
 
 Run: `npm install @prisma/client`
 Run: `npm install -D prisma`
 Expected: both succeed.
 
-- [ ] **Step 4: Write env files**
+- [ ] **Step 3: Write env files using the provided Neon connection string**
 
-`.env.example`:
+Take the `NEON_DATABASE_URL` provided in Step 1 and derive a second URL for the test database by replacing the database name (`cofounderfit`) with `cofounderfit_test` — same host, user, and password, just a different database name at the end of the path (before the `?sslmode=require`).
+
+`.env.example` (placeholder values, safe to commit):
 ```
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cofounderfit"
-TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cofounderfit_test"
+DATABASE_URL="postgresql://user:password@host-pooler.region.aws.neon.tech/cofounderfit?sslmode=require"
+TEST_DATABASE_URL="postgresql://user:password@host-pooler.region.aws.neon.tech/cofounderfit_test?sslmode=require"
 AUTH_SECRET=""
 AUTH_LINKEDIN_ID=""
 AUTH_LINKEDIN_SECRET=""
 ```
 
-`.env` (copy of the above with the same `DATABASE_URL`; `AUTH_*` values are filled in Task 5):
+`.env` (the real Neon dev connection string from Step 1 as `DATABASE_URL`, and the derived test-database URL as `TEST_DATABASE_URL`; `AUTH_*` values are filled in Task 5):
 ```
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cofounderfit"
-TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cofounderfit_test"
+DATABASE_URL="<NEON_DATABASE_URL from Step 1>"
+TEST_DATABASE_URL="<same URL with the database name changed to cofounderfit_test>"
 AUTH_SECRET=""
 AUTH_LINKEDIN_ID=""
 AUTH_LINKEDIN_SECRET=""
@@ -292,8 +279,15 @@ AUTH_LINKEDIN_SECRET=""
 
 `.env.test`:
 ```
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cofounderfit_test"
+DATABASE_URL="<same value as TEST_DATABASE_URL above>"
 ```
+
+- [ ] **Step 4: Create the test database on Neon**
+
+Neon's default database (renamed `cofounderfit` in Step 1) is the only one that exists so far — `cofounderfit_test` needs to be created inside the same Neon project.
+
+Run: `set -a && source .env && set +a && psql "$DATABASE_URL" -c "CREATE DATABASE cofounderfit_test;"`
+Expected: `CREATE DATABASE`.
 
 - [ ] **Step 5: Write the Prisma schema**
 
@@ -381,8 +375,8 @@ Expected: "Your database is now in sync with your Prisma schema."
 - [ ] **Step 8: Commit**
 
 ```bash
-git add docker-compose.yml prisma/schema.prisma prisma/migrations .env.example
-git commit -m "feat: add Postgres via Docker and Prisma schema for User, Profile, Project"
+git add prisma/schema.prisma prisma/migrations .env.example
+git commit -m "feat: add Neon Postgres connection and Prisma schema for User, Profile, Project"
 ```
 
 ---
@@ -530,7 +524,7 @@ Edit `package.json`, add a `"prisma"` field and a `db:seed` script:
 Run: `npm run db:seed`
 Expected: prints `Seeded users: { ada: '...', grace: '...' }` with no errors.
 
-Run: `docker compose exec -T postgres psql -U postgres -d cofounderfit -c "SELECT name FROM \"User\";"`
+Run: `set -a && source .env && set +a && psql "$DATABASE_URL" -c "SELECT name FROM \"User\";"`
 Expected: rows for `Ada Lovelace` and `Grace Hopper`.
 
 - [ ] **Step 6: Commit**
@@ -778,7 +772,7 @@ export default function AuthErrorPage() {
 
 Run: `npm run dev`
 Open `http://localhost:3000/api/auth/signin`, click LinkedIn, complete the OAuth consent screen.
-Expected: redirected back to the app signed in; `docker compose exec -T postgres psql -U postgres -d cofounderfit -c "SELECT * FROM \"User\";"` shows a new row with your real LinkedIn `linkedinId`; `SELECT id FROM "User"` for that row is a cuid, not the LinkedIn subject id.
+Expected: redirected back to the app signed in; `set -a && source .env && set +a && psql "$DATABASE_URL" -c 'SELECT * FROM "User";'` shows a new row with your real LinkedIn `linkedinId`; the `id` column for that row is a cuid, not the LinkedIn subject id.
 
 - [ ] **Step 8: Confirm the app still builds**
 
@@ -1856,8 +1850,8 @@ git commit -m "feat: add public project page and home dashboard"
 
 - [ ] **Step 1: Reset to a clean environment**
 
-Run: `docker compose down -v && docker compose up -d`
-Run: `docker compose exec -T postgres psql -U postgres -c "CREATE DATABASE cofounderfit_test;"`
+The Neon databases from Task 2 already exist; this step re-applies migrations and reseeds rather than recreating them (`prisma/seed.ts` already clears the `Project`/`Profile`/`User` tables before inserting, so this yields the same clean state).
+
 Run: `npx prisma migrate deploy`
 Run: `npx dotenv -e .env.test -- npx prisma db push`
 Run: `npm run db:seed`
@@ -1884,7 +1878,7 @@ Run: `npm run dev` and, in a browser:
 6. Visit `/project/<your-project-id>` → all fields render, including a working link back to your profile.
 7. In a second browser (or incognito window), visit `/profile/<ada's seeded id>` and `/project/<loomly's seeded id>` while signed out → both render read-only with no edit controls.
 8. Sign out from the home page → home page reverts to the "Sign in with LinkedIn" button.
-9. Sign back in with the same LinkedIn account → no duplicate user created (confirm via `docker compose exec -T postgres psql -U postgres -d cofounderfit -c "SELECT COUNT(*) FROM \"User\";"`), and you land straight on your own profile rather than `/profile/setup` again.
+9. Sign back in with the same LinkedIn account → no duplicate user created (confirm via `set -a && source .env && set +a && psql "$DATABASE_URL" -c 'SELECT COUNT(*) FROM "User";'`), and you land straight on your own profile rather than `/profile/setup` again.
 
 Expected: every step behaves as described above with no errors in the terminal or browser console.
 
