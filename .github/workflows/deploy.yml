@@ -9,11 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-      AUTH_LINKEDIN_ID: ${{ secrets.AUTH_LINKEDIN_ID }}
-      AUTH_LINKEDIN_SECRET: ${{ secrets.AUTH_LINKEDIN_SECRET }}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,7 +21,12 @@ jobs:
 
       - run: npx prisma generate
 
+      # Deliberately scoped to this step only, and to TEST_DATABASE_URL: the
+      # test suite truncates every table between tests (see resetDb()). Never
+      # let the real DATABASE_URL be in scope here, or CI wipes production.
       - run: npm test
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
 
       - run: npx opennextjs-cloudflare build
 
@@ -40,3 +40,8 @@ jobs:
             AUTH_SECRET
             AUTH_LINKEDIN_ID
             AUTH_LINKEDIN_SECRET
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          AUTH_LINKEDIN_ID: ${{ secrets.AUTH_LINKEDIN_ID }}
+          AUTH_LINKEDIN_SECRET: ${{ secrets.AUTH_LINKEDIN_SECRET }}
