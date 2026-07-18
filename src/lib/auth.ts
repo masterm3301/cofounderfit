@@ -4,6 +4,9 @@ import { prisma } from "./db";
 import { upsertUserFromLinkedInProfile } from "./onboarding";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Auth.js only auto-trusts the host on Vercel; self-hosting on Cloudflare
+  // means the incoming Host header (co-founder.fit) must be trusted explicitly.
+  trustHost: true,
   providers: [
     LinkedIn({
       clientId: process.env.AUTH_LINKEDIN_ID,
