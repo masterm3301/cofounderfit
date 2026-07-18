@@ -1,3 +1,4 @@
+import { auth } from "@/lib/auth";
 import { listProjects } from "@/lib/project";
 import { clampPage } from "@/lib/pagination";
 import { ProjectCard } from "@/components/ProjectCard";
@@ -7,8 +8,11 @@ export default async function DiscoverProjectsPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  const session = await auth();
+  const viewerId = session?.user?.id;
+
   const { page } = await searchParams;
-  const { projects, totalPages } = await listProjects(Number(page));
+  const { projects, totalPages } = await listProjects(Number(page), viewerId);
   const currentPage = clampPage(Number(page), totalPages);
 
   return (
@@ -19,7 +23,7 @@ export default async function DiscoverProjectsPage({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard key={project.id} project={project} viewerId={viewerId} currentPage={currentPage} />
           ))}
         </div>
       )}
