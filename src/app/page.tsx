@@ -6,6 +6,14 @@ export default async function HomePage() {
   return (
     <main className="p-8">
       <h1 className="text-2xl font-bold">co-founder.fit</h1>
+      <div className="flex gap-4 mt-2">
+        <a href="/discover/profiles" className="underline">
+          Discover Profiles
+        </a>
+        <a href="/discover/projects" className="underline">
+          Discover Projects
+        </a>
+      </div>
       {session?.user ? (
         <div className="flex flex-col gap-2 mt-4 items-start">
           <p>Signed in as {session.user.name}</p>
