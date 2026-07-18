@@ -1,4 +1,4 @@
-import type { Project, User } from "@prisma/client";
+import type { Project, User, ReactionStatus } from "@prisma/client";
 import { prisma } from "./db";
 import { projectSchema, ProjectInput } from "./validation/project";
 import { PAGE_SIZE, clampPage } from "./pagination";
@@ -30,8 +30,12 @@ export async function deleteProject(userId: string) {
 }
 
 export async function listProjects(
-  page: number
-): Promise<{ projects: (Project & { owner: User })[]; totalPages: number }> {
+  page: number,
+  viewerId?: string
+): Promise<{
+  projects: (Project & { owner: User; viewerReaction: ReactionStatus | null })[];
+  totalPages: number;
+}> {
   const total = await prisma.project.count();
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = clampPage(page, totalPages);
@@ -43,5 +47,20 @@ export async function listProjects(
     take: PAGE_SIZE,
   });
 
-  return { projects, totalPages };
+  if (!viewerId) {
+    return { projects: projects.map((project) => ({ ...project, viewerReaction: null })), totalPages };
+  }
+
+  const reactions = await prisma.projectReaction.findMany({
+    where: { fromUserId: viewerId, toProjectId: { in: projects.map((project) => project.id) } },
+  });
+  const reactionByProjectId = new Map(reactions.map((reaction) => [reaction.toProjectId, reaction.status]));
+
+  return {
+    projects: projects.map((project) => ({
+      ...project,
+      viewerReaction: reactionByProjectId.get(project.id) ?? null,
+    })),
+    totalPages,
+  };
 }

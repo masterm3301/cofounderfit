@@ -103,3 +103,37 @@ describe("listProjects", () => {
     expect(totalPages).toBe(1);
   });
 });
+
+describe("listProjects viewerReaction", () => {
+  it("attaches the viewer's existing reaction to each project", async () => {
+    const viewer = await createTestUser("li-viewer");
+    const likedOwner = await createTestUser("li-liked-owner");
+    const passedOwner = await createTestUser("li-passed-owner");
+    const undecidedOwner = await createTestUser("li-undecided-owner");
+
+    const likedProject = await createProject(likedOwner.id, { ...validInput, name: "Liked Project" });
+    const passedProject = await createProject(passedOwner.id, { ...validInput, name: "Passed Project" });
+    await createProject(undecidedOwner.id, { ...validInput, name: "Undecided Project" });
+
+    await prisma.projectReaction.create({
+      data: { fromUserId: viewer.id, toProjectId: likedProject.id, status: "LIKE" },
+    });
+    await prisma.projectReaction.create({
+      data: { fromUserId: viewer.id, toProjectId: passedProject.id, status: "PASS" },
+    });
+
+    const { projects } = await listProjects(1, viewer.id);
+    const byName = new Map(projects.map((project) => [project.name, project.viewerReaction]));
+
+    expect(byName.get("Liked Project")).toBe("LIKE");
+    expect(byName.get("Passed Project")).toBe("PASS");
+    expect(byName.get("Undecided Project")).toBeNull();
+  });
+
+  it("returns null viewerReaction for every project when no viewer is given", async () => {
+    const owner = await createTestUser("li-owner");
+    await createProject(owner.id, validInput);
+    const { projects } = await listProjects(1);
+    expect(projects.every((project) => project.viewerReaction === null)).toBe(true);
+  });
+});
