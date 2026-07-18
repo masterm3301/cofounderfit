@@ -8,12 +8,14 @@ export default async function ProjectEditPage() {
   const project = await getProject(userId);
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-4">{project ? "Edit your project" : "Create your project"}</h1>
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <h1 className="text-2xl font-bold tracking-tight mb-4">
+        {project ? "Edit your project" : "Create your project"}
+      </h1>
       <ProjectForm action={saveProjectAction} initialProject={project} />
       {project && (
         <form action={deleteProjectAction} className="mt-4">
-          <button type="submit" className="text-red-600 underline">
+          <button type="submit" className="text-sm text-red-600 hover:underline">
             Delete project
           </button>
         </form>
