@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import type { Profile } from "@prisma/client";
+import { Button } from "@/components/Button";
 
 const ROLE_TYPES = ["TECHNICAL", "BUSINESS", "DESIGN", "OTHER"] as const;
 const COMMITMENTS = ["FULL_TIME", "PART_TIME"] as const;
+
+const INPUT_CLASSES =
+  "border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500";
+const LABEL_CLASSES = "flex flex-col gap-1 text-sm font-medium text-gray-700";
 
 interface ProfileFormProps {
   action: (formData: FormData) => void;
@@ -17,17 +22,23 @@ export function ProfileForm({ action, initialProfile }: ProfileFormProps) {
 
   return (
     <form action={action} className="flex flex-col gap-4 max-w-lg">
-      <label className="flex flex-col gap-1">
+      <label className={LABEL_CLASSES}>
         Bio
-        <textarea name="bio" defaultValue={initialProfile?.bio ?? ""} required className="border p-2" />
+        <textarea name="bio" defaultValue={initialProfile?.bio ?? ""} required className={INPUT_CLASSES} />
       </label>
-      <label className="flex flex-col gap-1">
+      <label className={LABEL_CLASSES}>
         Skills (comma separated)
-        <input name="skills" value={skills} onChange={(e) => setSkills(e.target.value)} required className="border p-2" />
+        <input
+          name="skills"
+          value={skills}
+          onChange={(e) => setSkills(e.target.value)}
+          required
+          className={INPUT_CLASSES}
+        />
       </label>
-      <label className="flex flex-col gap-1">
+      <label className={LABEL_CLASSES}>
         Role
-        <select name="roleType" defaultValue={initialProfile?.roleType ?? ""} required className="border p-2">
+        <select name="roleType" defaultValue={initialProfile?.roleType ?? ""} required className={INPUT_CLASSES}>
           <option value="" disabled>
             Select a role
           </option>
@@ -38,9 +49,9 @@ export function ProfileForm({ action, initialProfile }: ProfileFormProps) {
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1">
+      <label className={LABEL_CLASSES}>
         Commitment
-        <select name="commitment" defaultValue={initialProfile?.commitment ?? ""} required className="border p-2">
+        <select name="commitment" defaultValue={initialProfile?.commitment ?? ""} required className={INPUT_CLASSES}>
           <option value="" disabled>
             Select commitment
           </option>
@@ -51,25 +62,34 @@ export function ProfileForm({ action, initialProfile }: ProfileFormProps) {
           ))}
         </select>
       </label>
-      <label className="flex items-center gap-2">
+      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
         <input type="checkbox" name="hasIdea" defaultChecked={initialProfile?.hasIdea ?? false} />
         I already have an idea
       </label>
-      <label className="flex flex-col gap-1">
+      <label className={LABEL_CLASSES}>
         Location
-        <input name="location" defaultValue={initialProfile?.location ?? ""} className="border p-2" />
+        <input name="location" defaultValue={initialProfile?.location ?? ""} className={INPUT_CLASSES} />
       </label>
-      <label className="flex flex-col gap-1">
+      <label className={LABEL_CLASSES}>
         What I want in a co-founder
-        <textarea name="coFounderTraitsWanted" defaultValue={initialProfile?.coFounderTraitsWanted ?? ""} className="border p-2" />
+        <textarea
+          name="coFounderTraitsWanted"
+          defaultValue={initialProfile?.coFounderTraitsWanted ?? ""}
+          className={INPUT_CLASSES}
+        />
       </label>
-      <label className="flex flex-col gap-1">
+      <label className={LABEL_CLASSES}>
         Other links (comma separated URLs)
-        <input name="otherLinks" value={otherLinks} onChange={(e) => setOtherLinks(e.target.value)} className="border p-2" />
+        <input
+          name="otherLinks"
+          value={otherLinks}
+          onChange={(e) => setOtherLinks(e.target.value)}
+          className={INPUT_CLASSES}
+        />
       </label>
-      <button type="submit" className="bg-black text-white p-2 rounded">
+      <Button type="submit" className="self-start">
         Save
-      </button>
+      </Button>
     </form>
   );
 }
