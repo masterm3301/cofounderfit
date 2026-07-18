@@ -2,7 +2,7 @@ import { auth, signIn } from "@/lib/auth";
 import { getHomeStats } from "@/lib/stats";
 import { getFeaturedProjects } from "@/lib/project";
 import { Card } from "@/components/Card";
-import { Button, LinkButton } from "@/components/Button";
+import { Button } from "@/components/Button";
 
 const TESTIMONIALS = [
   {
