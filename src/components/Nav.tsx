@@ -17,10 +17,13 @@ export async function Nav() {
   return (
     <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur">
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight text-gray-900">
+        <a
+          href="/"
+          className="flex items-center gap-2 text-lg font-bold tracking-tight text-gray-900"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" className="h-7 w-7" />
-          co-founder<span className="text-indigo-600">.fit</span>
+          <img src="/logo.png" alt="" className="h-16 w-16" />
+          {/* <span className="text-indigo-600">.FIT</span> */}
         </a>
 
         {session?.user ? (
