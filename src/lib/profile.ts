@@ -1,4 +1,4 @@
-import type { Profile, User } from "@prisma/client";
+import type { Profile, User, ReactionStatus } from "@prisma/client";
 import { prisma } from "./db";
 import { profileSchema, ProfileInput } from "./validation/profile";
 import { PAGE_SIZE, clampPage } from "./pagination";
@@ -25,8 +25,12 @@ const COMPLETE_PROFILE_FILTER = {
 };
 
 export async function listProfiles(
-  page: number
-): Promise<{ profiles: (Profile & { user: User })[]; totalPages: number }> {
+  page: number,
+  viewerId?: string
+): Promise<{
+  profiles: (Profile & { user: User; viewerReaction: ReactionStatus | null })[];
+  totalPages: number;
+}> {
   const total = await prisma.profile.count({ where: COMPLETE_PROFILE_FILTER });
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = clampPage(page, totalPages);
@@ -39,5 +43,20 @@ export async function listProfiles(
     take: PAGE_SIZE,
   });
 
-  return { profiles, totalPages };
+  if (!viewerId) {
+    return { profiles: profiles.map((profile) => ({ ...profile, viewerReaction: null })), totalPages };
+  }
+
+  const reactions = await prisma.profileReaction.findMany({
+    where: { fromUserId: viewerId, toUserId: { in: profiles.map((profile) => profile.userId) } },
+  });
+  const reactionByUserId = new Map(reactions.map((reaction) => [reaction.toUserId, reaction.status]));
+
+  return {
+    profiles: profiles.map((profile) => ({
+      ...profile,
+      viewerReaction: reactionByUserId.get(profile.userId) ?? null,
+    })),
+    totalPages,
+  };
 }

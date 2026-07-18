@@ -144,3 +144,33 @@ describe("listProfiles", () => {
     expect(totalPages).toBe(1);
   });
 });
+
+describe("listProfiles viewerReaction", () => {
+  it("attaches the viewer's existing reaction to each profile", async () => {
+    const viewer = await createCompleteProfileUser("li-viewer", "Viewer", new Date(2020, 0, 10));
+    const liked = await createCompleteProfileUser("li-liked", "Liked User", new Date(2020, 0, 1));
+    const passed = await createCompleteProfileUser("li-passed", "Passed User", new Date(2020, 0, 2));
+    const undecided = await createCompleteProfileUser("li-undecided", "Undecided User", new Date(2020, 0, 3));
+    void undecided;
+
+    await prisma.profileReaction.create({
+      data: { fromUserId: viewer.id, toUserId: liked.id, status: "LIKE" },
+    });
+    await prisma.profileReaction.create({
+      data: { fromUserId: viewer.id, toUserId: passed.id, status: "PASS" },
+    });
+
+    const { profiles } = await listProfiles(1, viewer.id);
+    const byName = new Map(profiles.map((profile) => [profile.user.name, profile.viewerReaction]));
+
+    expect(byName.get("Liked User")).toBe("LIKE");
+    expect(byName.get("Passed User")).toBe("PASS");
+    expect(byName.get("Undecided User")).toBeNull();
+  });
+
+  it("returns null viewerReaction for every profile when no viewer is given", async () => {
+    await createCompleteProfileUser("li-1", "Solo User", new Date(2020, 0, 1));
+    const { profiles } = await listProfiles(1);
+    expect(profiles.every((profile) => profile.viewerReaction === null)).toBe(true);
+  });
+});
