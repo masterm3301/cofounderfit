@@ -19,6 +19,11 @@ enum Commitment {
   PART_TIME
 }
 
+enum ReactionStatus {
+  LIKE
+  PASS
+}
+
 model User {
   id         String   @id @default(cuid())
   linkedinId String   @unique
@@ -28,6 +33,12 @@ model User {
 
   profile Profile?
   project Project?
+
+  profileReactionsSent     ProfileReaction[] @relation("ProfileReactionFrom")
+  profileReactionsReceived ProfileReaction[] @relation("ProfileReactionTo")
+  projectReactionsSent     ProjectReaction[] @relation("ProjectReactionFrom")
+  matchesAsUserA           Match[]           @relation("MatchUserA")
+  matchesAsUserB           Match[]           @relation("MatchUserB")
 }
 
 model Profile {
@@ -61,4 +72,46 @@ model Project {
   demoUrl             String?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
+
+  reactions ProjectReaction[]
+}
+
+model ProfileReaction {
+  id         String         @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  status     ReactionStatus
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  fromUser User @relation("ProfileReactionFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("ProfileReactionTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+}
+
+model ProjectReaction {
+  id          String         @id @default(cuid())
+  fromUserId  String
+  toProjectId String
+  status      ReactionStatus
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  fromUser  User    @relation("ProjectReactionFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toProject Project @relation(fields: [toProjectId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toProjectId])
+}
+
+model Match {
+  id        String   @id @default(cuid())
+  userAId   String
+  userBId   String
+  createdAt DateTime @default(now())
+
+  userA User @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
 }
