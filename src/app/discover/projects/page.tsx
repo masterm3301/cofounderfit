@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { listProjects } from "@/lib/project";
 import { clampPage } from "@/lib/pagination";
 import { ProjectCard } from "@/components/ProjectCard";
+import { LinkButton } from "@/components/Button";
 
 export default async function DiscoverProjectsPage({
   searchParams,
@@ -16,10 +17,10 @@ export default async function DiscoverProjectsPage({
   const currentPage = clampPage(Number(page), totalPages);
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Discover Projects</h1>
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <h1 className="text-2xl font-bold tracking-tight mb-4">Discover Projects</h1>
       {projects.length === 0 ? (
-        <p>No projects yet.</p>
+        <p className="text-gray-500">No projects yet.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((project) => (
@@ -29,17 +30,17 @@ export default async function DiscoverProjectsPage({
       )}
       <div className="flex items-center gap-4 mt-6">
         {currentPage > 1 && (
-          <a href={`/discover/projects?page=${currentPage - 1}`} className="underline">
+          <LinkButton href={`/discover/projects?page=${currentPage - 1}`} variant="secondary" size="sm">
             Prev
-          </a>
+          </LinkButton>
         )}
-        <span>
+        <span className="text-sm text-gray-500">
           Page {currentPage} of {totalPages}
         </span>
         {currentPage < totalPages && (
-          <a href={`/discover/projects?page=${currentPage + 1}`} className="underline">
+          <LinkButton href={`/discover/projects?page=${currentPage + 1}`} variant="secondary" size="sm">
             Next
-          </a>
+          </LinkButton>
         )}
       </div>
     </main>
