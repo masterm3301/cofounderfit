@@ -125,9 +125,14 @@ describe("listProfiles", () => {
   });
 
   it("orders newest user first and paginates at 20 per page", async () => {
-    for (let i = 0; i < 25; i++) {
-      await createCompleteProfileUser(`li-${i}`, `User ${i}`, new Date(2020, 0, 1 + i));
-    }
+    // Sequential awaits here would be 25 real round trips to Neon and can
+    // exceed the test timeout under CI network latency; these are all
+    // independent rows, so create them concurrently.
+    await Promise.all(
+      Array.from({ length: 25 }, (_, i) =>
+        createCompleteProfileUser(`li-${i}`, `User ${i}`, new Date(2020, 0, 1 + i))
+      )
+    );
 
     const page1 = await listProfiles(1);
     expect(page1.profiles).toHaveLength(20);

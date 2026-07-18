@@ -80,20 +80,26 @@ describe("getProjectById", () => {
 
 describe("listProjects", () => {
   it("orders newest first and paginates at 20 per page", async () => {
-    const owners = [];
-    for (let i = 0; i < 22; i++) {
-      const owner = await createTestUser(`li-${i}`);
-      owners.push(owner);
-      await prisma.project.create({
-        data: {
-          ownerId: owner.id,
-          name: `Project ${i}`,
-          tagline: "Tagline",
-          description: "Description",
-          createdAt: new Date(2020, 0, 1 + i),
-        },
-      });
-    }
+    // Sequential awaits here would be 44 real round trips to Neon (owner +
+    // project per iteration) and can exceed the test timeout under CI
+    // network latency; these are all independent rows, so create them
+    // concurrently. Promise.all preserves input order, so owners[i] still
+    // lines up with Project i regardless of completion order.
+    const owners = await Promise.all(
+      Array.from({ length: 22 }, async (_, i) => {
+        const owner = await createTestUser(`li-${i}`);
+        await prisma.project.create({
+          data: {
+            ownerId: owner.id,
+            name: `Project ${i}`,
+            tagline: "Tagline",
+            description: "Description",
+            createdAt: new Date(2020, 0, 1 + i),
+          },
+        });
+        return owner;
+      })
+    );
 
     const page1 = await listProjects(1);
     expect(page1.projects).toHaveLength(20);
