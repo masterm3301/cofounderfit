@@ -1,5 +1,5 @@
 import type { User, Profile, Project, ReactionStatus } from "@prisma/client";
-import { prisma } from "./db";
+import { getDb } from "./db";
 import { getProject } from "./project";
 
 function canonicalPair(userXId: string, userYId: string): [string, string] {
@@ -7,6 +7,7 @@ function canonicalPair(userXId: string, userYId: string): [string, string] {
 }
 
 export async function hasLikedUser(fromUserId: string, targetUserId: string): Promise<boolean> {
+  const prisma = getDb();
   const directLike = await prisma.profileReaction.findUnique({
     where: { fromUserId_toUserId: { fromUserId, toUserId: targetUserId } },
   });
@@ -25,6 +26,7 @@ async function createMatchIfMutual(userXId: string, userYId: string): Promise<bo
   const reciprocal = await hasLikedUser(userYId, userXId);
   if (!reciprocal) return false;
 
+  const prisma = getDb();
   const [userAId, userBId] = canonicalPair(userXId, userYId);
   await prisma.match.upsert({
     where: { userAId_userBId: { userAId, userBId } },
@@ -43,6 +45,7 @@ export async function reactToProfile(
     throw new Error("You cannot react to your own profile.");
   }
 
+  const prisma = getDb();
   await prisma.profileReaction.upsert({
     where: { fromUserId_toUserId: { fromUserId, toUserId } },
     update: { status },
@@ -59,6 +62,7 @@ export async function reactToProject(
   projectId: string,
   status: ReactionStatus
 ): Promise<{ matched: boolean }> {
+  const prisma = getDb();
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) {
     throw new Error("Project not found.");
@@ -81,6 +85,7 @@ export async function reactToProject(
 export async function getMatches(
   userId: string
 ): Promise<{ matchId: string; otherUser: User & { profile: Profile | null; project: Project | null }; matchedAt: Date }[]> {
+  const prisma = getDb();
   const matches = await prisma.match.findMany({
     where: { OR: [{ userAId: userId }, { userBId: userId }] },
     include: {
@@ -98,6 +103,7 @@ export async function getMatches(
 }
 
 export async function isMatch(userId: string, otherUserId: string): Promise<boolean> {
+  const prisma = getDb();
   const [userAId, userBId] = canonicalPair(userId, otherUserId);
   const match = await prisma.match.findUnique({ where: { userAId_userBId: { userAId, userBId } } });
   return Boolean(match);

@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import LinkedIn from "next-auth/providers/linkedin";
-import { prisma } from "./db";
+import { getDb } from "./db";
 import { upsertUserFromLinkedInProfile } from "./onboarding";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -30,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // so `token.sub` (and later session.user.id) matches what getProfile/getProject
       // expect everywhere else in the app.
       if (profile?.sub) {
-        const user = await prisma.user.findUnique({ where: { linkedinId: profile.sub } });
+        const user = await getDb().user.findUnique({ where: { linkedinId: profile.sub } });
         if (user) {
           token.sub = user.id;
         }

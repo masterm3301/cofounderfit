@@ -1,4 +1,4 @@
-import { prisma } from "./db";
+import { getDb } from "./db";
 
 interface LinkedInProfile {
   sub: string;
@@ -8,7 +8,7 @@ interface LinkedInProfile {
 }
 
 export async function upsertUserFromLinkedInProfile(profile: LinkedInProfile) {
-  return prisma.user.upsert({
+  return getDb().user.upsert({
     where: { linkedinId: profile.sub },
     update: { email: profile.email, name: profile.name },
     create: {

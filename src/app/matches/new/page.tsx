@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireCompleteProfile } from "@/lib/session";
 import { isMatch } from "@/lib/reaction";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { Card } from "@/components/Card";
 import { LinkButton } from "@/components/Button";
 
@@ -17,7 +17,7 @@ export default async function NewMatchPage({
     redirect("/matches");
   }
 
-  const otherUser = await prisma.user.findUnique({ where: { id: otherUserId } });
+  const otherUser = await getDb().user.findUnique({ where: { id: otherUserId } });
   if (!otherUser) {
     redirect("/matches");
   }

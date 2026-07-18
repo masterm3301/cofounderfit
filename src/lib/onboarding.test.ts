@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { prisma } from "./db";
+import { getDb } from "./db";
+const prisma = getDb();
 import { resetDb } from "../test/db-helpers";
 import { upsertUserFromLinkedInProfile } from "./onboarding";
 

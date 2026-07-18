@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { auth, signIn } from "@/lib/auth";
 import { getProfile } from "@/lib/profile";
 import { isMatch } from "@/lib/reaction";
@@ -17,6 +17,7 @@ function linkLabel(url: string) {
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
+  const prisma = getDb();
   const user = await prisma.user.findUnique({ where: { id: userId }, include: { project: true } });
   if (!user) notFound();
 

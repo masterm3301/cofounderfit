@@ -1,10 +1,10 @@
 import type { Profile, User, ReactionStatus } from "@prisma/client";
-import { prisma } from "./db";
+import { getDb } from "./db";
 import { profileSchema, ProfileInput } from "./validation/profile";
 import { PAGE_SIZE, clampPage } from "./pagination";
 
 export async function getProfile(userId: string) {
-  return prisma.profile.findUnique({ where: { userId } });
+  return getDb().profile.findUnique({ where: { userId } });
 }
 
 export function isProfileComplete(profile: Profile | null): boolean {
@@ -14,7 +14,7 @@ export function isProfileComplete(profile: Profile | null): boolean {
 
 export async function updateProfile(userId: string, input: ProfileInput) {
   const parsed = profileSchema.parse(input);
-  return prisma.profile.update({ where: { userId }, data: parsed });
+  return getDb().profile.update({ where: { userId }, data: parsed });
 }
 
 export const COMPLETE_PROFILE_FILTER = {
@@ -31,6 +31,7 @@ export async function listProfiles(
   profiles: (Profile & { user: User; viewerReaction: ReactionStatus | null })[];
   totalPages: number;
 }> {
+  const prisma = getDb();
   const total = await prisma.profile.count({ where: COMPLETE_PROFILE_FILTER });
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = clampPage(page, totalPages);
