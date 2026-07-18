@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Skill Tree AI",
+    "tagline": "An open, visual tree mapping every learnable skill, root to mastery",
+    "ownerName": "Tree of Knowledge",
+    "url": "https://github.com/Tree-of-Knowledge/Skill-Tree"
+  },
+  {
+    "name": "Famous",
+    "tagline": "One random person gets famous for a week — everyone else watches",
+    "ownerName": "Tree of Knowledge",
+    "url": "https://github.com/Tree-of-Knowledge/maxhour"
+  },
+  {
+    "name": "BlockchainVote",
+    "tagline": "Transparent, tamper-proof elections on the blockchain",
+    "ownerName": "Tree of Knowledge",
+    "url": "https://github.com/Tree-of-Knowledge/honestVote"
+  }
+]

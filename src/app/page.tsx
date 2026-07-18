@@ -1,7 +1,7 @@
 import { auth, signIn } from "@/lib/auth";
 import { getHomeStats } from "@/lib/stats";
-import { getFeaturedProjects } from "@/lib/project";
 import { Button, LinkButton } from "@/components/Button";
+import featuredProjects from "@/data/featured-projects.json";
 
 const TESTIMONIALS = [
   {
@@ -62,10 +62,7 @@ function SignInButton({
 
 export default async function HomePage() {
   const session = await auth();
-  const [stats, featuredProjects] = await Promise.all([
-    getHomeStats(),
-    getFeaturedProjects(),
-  ]);
+  const stats = await getHomeStats();
 
   const statItems = [
     { value: stats.profileCount, label: "Builders" },
@@ -196,57 +193,48 @@ export default async function HomePage() {
                 Projects looking for a co-founder right now
               </h2>
             </div>
-            {featuredProjects.length > 0 && (
-              <a
-                href="/discover/projects"
-                className="text-sm font-medium text-indigo-600 hover:text-indigo-700 whitespace-nowrap"
-              >
-                Browse all projects →
-              </a>
-            )}
+            <a
+              href="/discover/projects"
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 whitespace-nowrap"
+            >
+              Browse all projects →
+            </a>
           </div>
 
-          {featuredProjects.length === 0 ? (
-            <div className="mt-8 rounded-2xl border border-dashed border-gray-300 py-14 text-center">
-              <p className="font-medium text-gray-900">No projects yet</p>
-              <p className="mt-1 text-sm text-gray-500">
-                Yours could be the first one on the board.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
-              {featuredProjects.map((project) => (
-                <a
-                  key={project.id}
-                  href={`/project/${project.id}`}
-                  className="group flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-indigo-300 hover:-translate-y-0.5"
-                >
-                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600">
-                    {project.name}
-                  </h3>
-                  <p className="mt-2 text-sm text-gray-600 line-clamp-2 flex-1">
-                    {project.tagline}
-                  </p>
-                  <div className="mt-5 flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
-                        {(project.owner.name ?? "?").charAt(0).toUpperCase()}
-                      </span>
-                      <span className="text-xs text-gray-500 truncate">
-                        {project.owner.name}
-                      </span>
-                    </div>
-                    <span
-                      aria-hidden="true"
-                      className="text-indigo-600 opacity-0 -translate-x-1 transition group-hover:opacity-100 group-hover:translate-x-0"
-                    >
-                      →
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {featuredProjects.map((project) => (
+              <a
+                key={project.name}
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-indigo-300 hover:-translate-y-0.5"
+              >
+                <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600">
+                  {project.name}
+                </h3>
+                <p className="mt-2 text-sm text-gray-600 line-clamp-2 flex-1">
+                  {project.tagline}
+                </p>
+                <div className="mt-5 flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                      {project.ownerName.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="text-xs text-gray-500 truncate">
+                      {project.ownerName}
                     </span>
                   </div>
-                </a>
-              ))}
-            </div>
-          )}
+                  <span
+                    aria-hidden="true"
+                    className="text-indigo-600 opacity-0 -translate-x-1 transition group-hover:opacity-100 group-hover:translate-x-0"
+                  >
+                    →
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
