@@ -1,7 +1,15 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { prisma } from "./db";
 import { resetDb } from "../test/db-helpers";
-import { getProject, getProjectById, createProject, updateProject, deleteProject, listProjects } from "./project";
+import {
+  getProject,
+  getProjectById,
+  createProject,
+  updateProject,
+  deleteProject,
+  listProjects,
+  getFeaturedProjects,
+} from "./project";
 
 beforeEach(async () => {
   await resetDb();
@@ -135,5 +143,30 @@ describe("listProjects viewerReaction", () => {
     await createProject(owner.id, validInput);
     const { projects } = await listProjects(1);
     expect(projects.every((project) => project.viewerReaction === null)).toBe(true);
+  });
+});
+
+describe("getFeaturedProjects", () => {
+  it("returns up to 3 most recently created projects, newest first", async () => {
+    for (let i = 0; i < 5; i++) {
+      const owner = await createTestUser(`li-featured-${i}`);
+      await prisma.project.create({
+        data: {
+          ownerId: owner.id,
+          name: `Project ${i}`,
+          tagline: "Tagline",
+          description: "Description",
+          createdAt: new Date(2020, 0, 1 + i),
+        },
+      });
+    }
+
+    const featured = await getFeaturedProjects();
+    expect(featured).toHaveLength(3);
+    expect(featured.map((project) => project.name)).toEqual(["Project 4", "Project 3", "Project 2"]);
+  });
+
+  it("returns an empty array when there are no projects", async () => {
+    expect(await getFeaturedProjects()).toEqual([]);
   });
 });

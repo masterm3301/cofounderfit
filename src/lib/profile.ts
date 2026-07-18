@@ -17,7 +17,7 @@ export async function updateProfile(userId: string, input: ProfileInput) {
   return prisma.profile.update({ where: { userId }, data: parsed });
 }
 
-const COMPLETE_PROFILE_FILTER = {
+export const COMPLETE_PROFILE_FILTER = {
   bio: { not: null },
   roleType: { not: null },
   commitment: { not: null },

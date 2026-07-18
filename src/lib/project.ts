@@ -64,3 +64,11 @@ export async function listProjects(
     totalPages,
   };
 }
+
+export async function getFeaturedProjects(): Promise<(Project & { owner: User })[]> {
+  return prisma.project.findMany({
+    include: { owner: true },
+    orderBy: { createdAt: "desc" },
+    take: 3,
+  });
+}
