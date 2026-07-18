@@ -1,29 +1,30 @@
 import { auth, signIn, signOut } from "@/lib/auth";
 import { Button } from "@/components/Button";
+import { NavLinks } from "@/components/NavLinks";
 
 export async function Nav() {
   const session = await auth();
 
+  const links = session?.user
+    ? [
+        { href: "/discover/profiles", label: "Profiles" },
+        { href: "/discover/projects", label: "Projects" },
+        { href: "/matches", label: "Matches" },
+        { href: `/profile/${session.user.id}`, label: "My profile" },
+      ]
+    : [];
+
   return (
-    <header className="border-b border-gray-200">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a href="/" className="text-lg font-bold tracking-tight text-gray-900">
+    <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <a href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight text-gray-900">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" className="h-7 w-7" />
           co-founder<span className="text-indigo-600">.fit</span>
         </a>
+
         {session?.user ? (
-          <nav className="flex items-center gap-4 text-sm text-gray-700">
-            <a href="/discover/profiles" className="hover:text-gray-900">
-              Discover Profiles
-            </a>
-            <a href="/discover/projects" className="hover:text-gray-900">
-              Discover Projects
-            </a>
-            <a href="/matches" className="hover:text-gray-900">
-              My Matches
-            </a>
-            <a href={`/profile/${session.user.id}`} className="hover:text-gray-900">
-              My Profile
-            </a>
+          <NavLinks links={links}>
             <form
               action={async () => {
                 "use server";
@@ -34,7 +35,7 @@ export async function Nav() {
                 Sign out
               </Button>
             </form>
-          </nav>
+          </NavLinks>
         ) : (
           <form
             action={async () => {

@@ -7,8 +7,20 @@ export async function getProject(userId: string) {
   return prisma.project.findUnique({ where: { ownerId: userId } });
 }
 
-export async function getProjectById(projectId: string) {
-  return prisma.project.findUnique({ where: { id: projectId }, include: { owner: true } });
+export async function getProjectById(
+  projectId: string,
+  viewerId?: string
+): Promise<(Project & { owner: User; viewerReaction: ReactionStatus | null }) | null> {
+  const project = await prisma.project.findUnique({ where: { id: projectId }, include: { owner: true } });
+  if (!project) return null;
+
+  const reaction = viewerId
+    ? await prisma.projectReaction.findUnique({
+        where: { fromUserId_toProjectId: { fromUserId: viewerId, toProjectId: project.id } },
+      })
+    : null;
+
+  return { ...project, viewerReaction: reaction?.status ?? null };
 }
 
 export async function createProject(userId: string, input: ProjectInput) {
