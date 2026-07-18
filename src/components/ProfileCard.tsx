@@ -1,5 +1,7 @@
 import type { Profile, User, ReactionStatus } from "@prisma/client";
 import { reactToProfileAction } from "@/app/actions/reaction";
+import { Card } from "@/components/Card";
+import { Button } from "@/components/Button";
 
 interface ProfileCardProps {
   profile: Profile & { user: User; viewerReaction: ReactionStatus | null };
@@ -13,7 +15,7 @@ export function ProfileCard({ profile, viewerId, currentPage }: ProfileCardProps
   const isOwnCard = viewerId === profile.userId;
 
   return (
-    <div className="border rounded p-4 hover:bg-gray-50">
+    <Card className="hover:shadow-md transition-shadow">
       <a href={`/profile/${profile.userId}`} className="block">
         {profile.photoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -23,15 +25,15 @@ export function ProfileCard({ profile, viewerId, currentPage }: ProfileCardProps
             className="w-12 h-12 rounded-full object-cover mb-2"
           />
         )}
-        <h2 className="font-bold">{profile.user.name}</h2>
-        {profile.location && <p className="text-sm text-gray-600">{profile.location}</p>}
-        {bioSnippet && <p className="text-sm mt-1">{bioSnippet}</p>}
-        <p className="text-sm mt-1">
+        <h2 className="font-bold text-gray-900">{profile.user.name}</h2>
+        {profile.location && <p className="text-sm text-gray-500">{profile.location}</p>}
+        {bioSnippet && <p className="text-sm mt-1 text-gray-700">{bioSnippet}</p>}
+        <p className="text-sm mt-1 text-gray-500">
           {profile.roleType} · {profile.commitment}
         </p>
         <div className="flex flex-wrap gap-1 mt-2">
           {profile.skills.map((skill) => (
-            <span key={skill} className="text-xs bg-gray-200 rounded px-2 py-0.5">
+            <span key={skill} className="text-xs bg-indigo-50 text-indigo-700 rounded px-2 py-0.5">
               {skill}
             </span>
           ))}
@@ -42,29 +44,19 @@ export function ProfileCard({ profile, viewerId, currentPage }: ProfileCardProps
           <form action={reactToProfileAction.bind(null, "LIKE")}>
             <input type="hidden" name="toUserId" value={profile.userId} />
             <input type="hidden" name="page" value={currentPage} />
-            <button
-              type="submit"
-              className={`text-sm px-3 py-1 rounded border ${
-                profile.viewerReaction === "LIKE" ? "bg-black text-white" : ""
-              }`}
-            >
+            <Button type="submit" size="sm" variant={profile.viewerReaction === "LIKE" ? "primary" : "secondary"}>
               Like
-            </button>
+            </Button>
           </form>
           <form action={reactToProfileAction.bind(null, "PASS")}>
             <input type="hidden" name="toUserId" value={profile.userId} />
             <input type="hidden" name="page" value={currentPage} />
-            <button
-              type="submit"
-              className={`text-sm px-3 py-1 rounded border ${
-                profile.viewerReaction === "PASS" ? "bg-black text-white" : ""
-              }`}
-            >
+            <Button type="submit" size="sm" variant={profile.viewerReaction === "PASS" ? "primary" : "secondary"}>
               Pass
-            </button>
+            </Button>
           </form>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

@@ -1,5 +1,7 @@
 import type { Project, User, ReactionStatus } from "@prisma/client";
 import { reactToProjectAction } from "@/app/actions/reaction";
+import { Card } from "@/components/Card";
+import { Button } from "@/components/Button";
 
 interface ProjectCardProps {
   project: Project & { owner: User; viewerReaction: ReactionStatus | null };
@@ -11,15 +13,15 @@ export function ProjectCard({ project, viewerId, currentPage }: ProjectCardProps
   const isOwnCard = viewerId === project.ownerId;
 
   return (
-    <div className="border rounded p-4 hover:bg-gray-50">
+    <Card className="hover:shadow-md transition-shadow">
       <a href={`/project/${project.id}`} className="block">
-        <h2 className="font-bold">{project.name}</h2>
-        <p className="text-sm italic">{project.tagline}</p>
-        {project.industry && <p className="text-sm text-gray-600">{project.industry}</p>}
+        <h2 className="font-bold text-gray-900">{project.name}</h2>
+        <p className="text-sm italic text-gray-500">{project.tagline}</p>
+        {project.industry && <p className="text-sm text-gray-500">{project.industry}</p>}
         {project.rolesNeeded.length > 0 && (
-          <p className="text-sm mt-1">Roles needed: {project.rolesNeeded.join(", ")}</p>
+          <p className="text-sm mt-1 text-gray-700">Roles needed: {project.rolesNeeded.join(", ")}</p>
         )}
-        {project.commitmentExpected && <p className="text-sm">{project.commitmentExpected}</p>}
+        {project.commitmentExpected && <p className="text-sm text-gray-700">{project.commitmentExpected}</p>}
         <p className="text-xs text-gray-500 mt-2">by {project.owner.name}</p>
       </a>
       {!isOwnCard && (
@@ -28,30 +30,20 @@ export function ProjectCard({ project, viewerId, currentPage }: ProjectCardProps
             <input type="hidden" name="projectId" value={project.id} />
             <input type="hidden" name="ownerId" value={project.ownerId} />
             <input type="hidden" name="page" value={currentPage} />
-            <button
-              type="submit"
-              className={`text-sm px-3 py-1 rounded border ${
-                project.viewerReaction === "LIKE" ? "bg-black text-white" : ""
-              }`}
-            >
+            <Button type="submit" size="sm" variant={project.viewerReaction === "LIKE" ? "primary" : "secondary"}>
               Like
-            </button>
+            </Button>
           </form>
           <form action={reactToProjectAction.bind(null, "PASS")}>
             <input type="hidden" name="projectId" value={project.id} />
             <input type="hidden" name="ownerId" value={project.ownerId} />
             <input type="hidden" name="page" value={currentPage} />
-            <button
-              type="submit"
-              className={`text-sm px-3 py-1 rounded border ${
-                project.viewerReaction === "PASS" ? "bg-black text-white" : ""
-              }`}
-            >
+            <Button type="submit" size="sm" variant={project.viewerReaction === "PASS" ? "primary" : "secondary"}>
               Pass
-            </button>
+            </Button>
           </form>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
