@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { prisma } from "./db";
 import { resetDb } from "../test/db-helpers";
-import { getProject, getProjectById, createProject, updateProject, deleteProject } from "./project";
+import { getProject, getProjectById, createProject, updateProject, deleteProject, listProjects } from "./project";
 
 beforeEach(async () => {
   await resetDb();
@@ -66,5 +66,40 @@ describe("getProjectById", () => {
     const project = await createProject(user.id, validInput);
     const found = await getProjectById(project.id);
     expect(found?.owner.id).toBe(user.id);
+  });
+});
+
+describe("listProjects", () => {
+  it("orders newest first and paginates at 20 per page", async () => {
+    const owners = [];
+    for (let i = 0; i < 22; i++) {
+      const owner = await createTestUser(`li-${i}`);
+      owners.push(owner);
+      await prisma.project.create({
+        data: {
+          ownerId: owner.id,
+          name: `Project ${i}`,
+          tagline: "Tagline",
+          description: "Description",
+          createdAt: new Date(2020, 0, 1 + i),
+        },
+      });
+    }
+
+    const page1 = await listProjects(1);
+    expect(page1.projects).toHaveLength(20);
+    expect(page1.totalPages).toBe(2);
+    expect(page1.projects[0].name).toBe("Project 21");
+    expect(page1.projects[0].owner.id).toBe(owners[21].id);
+
+    const page2 = await listProjects(2);
+    expect(page2.projects).toHaveLength(2);
+    expect(page2.projects[1].name).toBe("Project 0");
+  });
+
+  it("returns an empty list with totalPages 1 when there are no projects", async () => {
+    const { projects, totalPages } = await listProjects(1);
+    expect(projects).toEqual([]);
+    expect(totalPages).toBe(1);
   });
 });
