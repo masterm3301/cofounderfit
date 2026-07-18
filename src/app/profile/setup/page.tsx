@@ -8,8 +8,8 @@ export default async function ProfileSetupPage() {
   const profile = await getProfile(userId);
 
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Complete your profile</h1>
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <h1 className="text-2xl font-bold tracking-tight mb-4">Complete your profile</h1>
       <ProfileForm action={saveProfileAction} initialProfile={profile} />
     </main>
   );
