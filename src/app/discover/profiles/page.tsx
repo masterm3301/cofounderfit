@@ -8,10 +8,10 @@ export default async function DiscoverProfilesPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  await requireCompleteProfile();
+  const viewerId = await requireCompleteProfile();
 
   const { page } = await searchParams;
-  const { profiles, totalPages } = await listProfiles(Number(page));
+  const { profiles, totalPages } = await listProfiles(Number(page), viewerId);
   const currentPage = clampPage(Number(page), totalPages);
 
   return (
@@ -22,7 +22,7 @@ export default async function DiscoverProfilesPage({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {profiles.map((profile) => (
-            <ProfileCard key={profile.userId} profile={profile} />
+            <ProfileCard key={profile.userId} profile={profile} viewerId={viewerId} currentPage={currentPage} />
           ))}
         </div>
       )}
