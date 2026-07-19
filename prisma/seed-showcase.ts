@@ -15,19 +15,11 @@ interface ShowcaseProject {
   industry: string;
   rolesNeeded: string[];
   websiteUrl: string;
+  // Only one showcase owner gets a Profile so "Tree of Knowledge" appears once in discover
+  hasProfile?: boolean;
 }
 
 const projects: ShowcaseProject[] = [
-  {
-    slug: "crystartup",
-    name: "Crystartup",
-    tagline: "Decentralized crowdfunding for startups, powered by crypto",
-    description:
-      "A decentralized crowdfunding platform powered by cryptocurrency for startups and mobile applications. Features blockchain-based funding, smart contracts, and crypto payment integration.",
-    industry: "Blockchain / Fintech",
-    rolesNeeded: ["Blockchain engineer", "Smart contract developer", "Business co-founder"],
-    websiteUrl: "https://github.com/Tree-of-Knowledge/crystartup",
-  },
   {
     slug: "freecen",
     name: "Freecen",
@@ -49,16 +41,6 @@ const projects: ShowcaseProject[] = [
     websiteUrl: "https://github.com/Tree-of-Knowledge/gasurvivor",
   },
   {
-    slug: "honestvote",
-    name: "BlockchainVote",
-    tagline: "Transparent, tamper-proof elections on the blockchain",
-    description:
-      "A decentralized voting system built on blockchain technology, ensuring transparent and tamper-proof elections for organizations and communities.",
-    industry: "GovTech / Blockchain",
-    rolesNeeded: ["Blockchain engineer", "Frontend engineer"],
-    websiteUrl: "https://github.com/Tree-of-Knowledge/honestVote",
-  },
-  {
     slug: "maxhour",
     name: "Famous",
     tagline: "One random person gets famous for a week — everyone else watches",
@@ -67,16 +49,7 @@ const projects: ShowcaseProject[] = [
     industry: "Social / Entertainment",
     rolesNeeded: ["Mobile engineer", "Growth", "Community moderator"],
     websiteUrl: "https://github.com/Tree-of-Knowledge/maxhour",
-  },
-  {
-    slug: "skill-tree",
-    name: "Skill Tree AI",
-    tagline: "An open, visual tree mapping every learnable skill, root to mastery",
-    description:
-      "An open, visual, interactive \"tree\" mapping every learnable skill from roots to mastery — each node is a community-maintained markdown file with the best free resources, a learning path, exercises, and \"poneglyphs\": the hard-won insider knowledge no course teaches you. Like roadmap.sh, but fully open, contributor-driven, and covering everything, not just tech. Contributing is simple: edit a markdown node, open a PR. The poneglyph notes unlock structurally once you've traversed the prerequisite nodes.",
-    industry: "EdTech / Open Source",
-    rolesNeeded: ["Frontend engineer", "Content curator"],
-    websiteUrl: "https://github.com/Tree-of-Knowledge/Skill-Tree",
+    hasProfile: true,
   },
 ];
 
@@ -89,16 +62,20 @@ async function main() {
         linkedinId: `showcase-${project.slug}`,
         email: `${project.slug}@treeofknowledge.dev`,
         name: OWNER_NAME,
-        profile: {
-          create: {
-            bio: `Building ${project.name} at Tree of Knowledge.`,
-            skills: ["Product", "Engineering"],
-            roleType: "TECHNICAL",
-            commitment: "FULL_TIME",
-            hasIdea: true,
-            otherLinks: [project.websiteUrl],
-          },
-        },
+        ...(project.hasProfile
+          ? {
+              profile: {
+                create: {
+                  bio: `Building ${project.name} at Tree of Knowledge.`,
+                  skills: ["Product", "Engineering"],
+                  roleType: "TECHNICAL",
+                  commitment: "FULL_TIME",
+                  hasIdea: true,
+                  otherLinks: [project.websiteUrl],
+                },
+              },
+            }
+          : {}),
       },
     });
 

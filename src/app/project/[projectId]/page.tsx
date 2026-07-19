@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { auth, signIn } from "@/lib/auth";
 import { getProjectById } from "@/lib/project";
+import { getProfile } from "@/lib/profile";
 import { reactToProjectAction } from "@/app/actions/reaction";
 import { Button, LinkButton } from "@/components/Button";
 import { COMMITMENT_LABELS } from "@/lib/labels";
@@ -13,6 +14,7 @@ export default async function PublicProjectPage({ params }: { params: Promise<{ 
   if (!project) notFound();
 
   const isOwner = viewerId === project.ownerId;
+  const ownerProfile = await getProfile(project.ownerId);
 
   const links = [
     { label: "Website", url: project.websiteUrl },
@@ -139,17 +141,28 @@ export default async function PublicProjectPage({ params }: { params: Promise<{ 
             </div>
 
             <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Founder</p>
-            <a href={`/profile/${project.owner.id}`} className="group mt-3 flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-base font-semibold text-indigo-700">
-                {project.owner.name.charAt(0).toUpperCase()}
-              </span>
-              <span className="min-w-0">
-                <span className="block font-semibold text-gray-900 truncate group-hover:text-indigo-600">
-                  {project.owner.name}
+            {ownerProfile ? (
+              <a href={`/profile/${project.owner.id}`} className="group mt-3 flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-base font-semibold text-indigo-700">
+                  {project.owner.name.charAt(0).toUpperCase()}
                 </span>
-                <span className="block text-sm text-indigo-600">View profile →</span>
-              </span>
-            </a>
+                <span className="min-w-0">
+                  <span className="block font-semibold text-gray-900 truncate group-hover:text-indigo-600">
+                    {project.owner.name}
+                  </span>
+                  <span className="block text-sm text-indigo-600">View profile →</span>
+                </span>
+              </a>
+            ) : (
+              <div className="mt-3 flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-base font-semibold text-indigo-700">
+                  {project.owner.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-semibold text-gray-900 truncate">{project.owner.name}</span>
+                </span>
+              </div>
+            )}
 
             {(project.commitmentExpected || project.equityOffered) && (
               <dl className="mt-5 border-t border-gray-100 pt-5 space-y-4">

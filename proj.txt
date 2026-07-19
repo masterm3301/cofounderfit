@@ -1,0 +1,6 @@
+  - Crystartup — decentralized crypto crowdfunding
+  - Freecen — censorship-resistant messaging
+  - Gaza Survivor — educational war-survival game
+  - BlockchainVote — tamper-proof blockchain elections
+  - Famous — weekly random-person-gets-famous app
+  - Skill Tree AI — open, contributor-driven skill tree

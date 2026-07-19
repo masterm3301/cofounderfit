@@ -1,20 +1,20 @@
 [
   {
-    "name": "Skill Tree AI",
-    "tagline": "An open, visual tree mapping every learnable skill, root to mastery",
-    "ownerName": "Tree of Knowledge",
-    "url": "https://github.com/Tree-of-Knowledge/Skill-Tree"
-  },
-  {
     "name": "Famous",
     "tagline": "One random person gets famous for a week — everyone else watches",
     "ownerName": "Tree of Knowledge",
     "url": "https://github.com/Tree-of-Knowledge/maxhour"
   },
   {
-    "name": "BlockchainVote",
-    "tagline": "Transparent, tamper-proof elections on the blockchain",
+    "name": "Freecen",
+    "tagline": "Censorship-resistant messaging, Telegram-style",
     "ownerName": "Tree of Knowledge",
-    "url": "https://github.com/Tree-of-Knowledge/honestVote"
+    "url": "https://github.com/Tree-of-Knowledge/freecen"
+  },
+  {
+    "name": "Gaza Survivor",
+    "tagline": "A survival game that puts you in a civilian's shoes during war",
+    "ownerName": "Tree of Knowledge",
+    "url": "https://github.com/Tree-of-Knowledge/gasurvivor"
   }
 ]
